@@ -1,0 +1,6 @@
+item.builder_tools:WoodenHand.name=Wooden Builder Tool
+item.builder_tools:StoneHand.name=stone Builder Tool
+
+
+
+itemGroup.builder_tools=Builder Tools

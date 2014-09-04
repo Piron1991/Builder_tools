@@ -1,0 +1,17 @@
+Aim: Provide a set of tools that allow for easy building of set patterns and later defined by user in GUI grid
+
+main features:
+1. big configurability:
+	-recipes read from configs
+	-range, size, fuel consumption etc set in configs
+	-ability to disable item completly
+2. a progressive building tools:
+	-wooden,stone,iron,gold for difrent size: 3x1, 3x3, 5x1 to 5x5, 1x1 to 7x7
+	-durability based on number of blocks placed, mirror durability from tools.
+	-block that should be used is defined by shift-click on block and variable sized tools by shift click on air
+3. a customizable building tools:
+	- diamond, nether star, dragon egg
+	- all have a gui with configurable pattern by user:
+		-a 16x16 pattern (container) that allow to set what type of block should be placed, to choose horizontal/vertical placement of block with center being block thats clicked on instead by side it was clicked, meybe if it should place in corner/center
+	-variable number of materials that can be specified: diamond:2, netherstar:5, dragon egg: every slot in container can be defined individualy
+4. a phantom blocks to show how will they be placed
