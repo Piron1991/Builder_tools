@@ -40,8 +40,8 @@ public class StoneHand extends ItemBase {
     public boolean onItemUse(ItemStack itemstack, EntityPlayer player, World world, int x, int y, int z, int face, float hit_x, float hit_y, float hit_z) {
         if (!world.isRemote ){
 
-            boolean teCheck=world.getBlock(x,y,z).hasTileEntity(world.getBlockMetadata(x,y,z));
-            if(!player.isSneaking() && !teCheck) {
+            //boolean teCheck=world.getBlock(x,y,z).hasTileEntity(world.getBlockMetadata(x,y,z));
+            if(!player.isSneaking()) {
                 //save to nbt clicked block name and its meta
                 setCLickedBlock(itemstack, world, x, y, z);
 
