@@ -220,7 +220,7 @@ pip-log.txt
 build/
 eclipse/
 out/
-.iml
-.ipr
-.iws
-.xcf
+*.iml
+*.ipr
+*.iws
+*.xcf

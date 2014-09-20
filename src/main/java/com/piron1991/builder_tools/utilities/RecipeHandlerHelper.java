@@ -17,13 +17,11 @@ public class RecipeHandlerHelper {
     private int metaIndex;
 
     public RecipeHandlerHelper(String object) {
-        LogHelper.info(object);
         if (object=="empty"){
             name=" ";
             meta=0;
         }else if (!object.contains(":")||!object.contains(".")) {
             name = object;
-            LogHelper.info(name);
         } else if (object.contains(":")) {
 
             colonIndex = object.indexOf(':');
@@ -38,7 +36,6 @@ public class RecipeHandlerHelper {
                 name = item;
                 meta = 0;
             }
-            LogHelper.info(name);
         } else {
             LogHelper.error("Wrong ore dictionary or item entry: "+object.toUpperCase());
         }

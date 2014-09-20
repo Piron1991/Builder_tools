@@ -42,7 +42,6 @@ public class InitRecipe {
         String string3=getRecipeString(obj7,obj8,obj9,3);
         ItemStack[] recipe={obj1.getItemStack(),obj2.getItemStack(),obj3.getItemStack(),obj4.getItemStack(),obj5.getItemStack(),obj6.getItemStack(),obj7.getItemStack(),obj8.getItemStack(),obj9.getItemStack(),};
 
-        LogHelper.info(obj6.getName()+":"+recipe[6]+"/"+string2);
         GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(InitItems.woodhand), new Object[]
                 {string1, string2, string3,
                         'A', recipe[0],
@@ -75,7 +74,6 @@ public class InitRecipe {
         String string2=getRecipeString(obj4,obj5,obj6,2);
         String string3=getRecipeString(obj7,obj8,obj9,3);
         ItemStack[] recipe={obj1.getItemStack(),obj2.getItemStack(),obj3.getItemStack(),obj4.getItemStack(),obj5.getItemStack(),obj6.getItemStack(),obj7.getItemStack(),obj8.getItemStack(),obj9.getItemStack(),};
-        LogHelper.info(obj6.getName()+":"+recipe[6]+"/"+string2);
         GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(InitItems.stonehand), new Object[]
                 {string1, string2, string3,
                         'A',  recipe[0],

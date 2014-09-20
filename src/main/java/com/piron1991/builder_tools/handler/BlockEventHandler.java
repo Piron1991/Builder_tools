@@ -2,50 +2,60 @@ package com.piron1991.builder_tools.handler;
 
 
 import com.piron1991.builder_tools.client.items.*;
+import com.piron1991.builder_tools.utilities.LogHelper;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.DrawBlockHighlightEvent;
 import com.piron1991.builder_tools.render.FakeBBRender;
+import net.minecraftforge.client.event.MouseEvent;
+import net.minecraftforge.common.DimensionManager;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import sun.rmi.runtime.Log;
 
 
 public class BlockEventHandler {
 
-
-    public RenderGlobal context;
-    public EntityPlayer player;
-    public MovingObjectPosition target;
-    public int subID;
-    public ItemStack currentItem;
-    public float partialTicks;
-
     @SubscribeEvent
     public void onHighlight(DrawBlockHighlightEvent event) {
 
-        context = event.context;
-        player = event.player;
-        target = event.target;
-        subID = event.subID;
-        currentItem = event.currentItem;
-        partialTicks = event.partialTicks;
-        int block_x = target.blockX;
-        int block_y = target.blockY;
-        int block_z = target.blockZ;
-        World world = player.getEntityWorld();
+        int block_x = event.target.blockX;
+        int block_y = event.target.blockY;
+        int block_z = event.target.blockZ;
+        World world = event.player.getEntityWorld();
 
-        if (subID==0 &&
-                target.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK &&
-                currentItem!=null &&
-                currentItem.getItem() instanceof ItemBase) {
+        if (event.subID==0 &&
+                event.target.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK &&
+                event.currentItem!=null &&
+                event.currentItem.getItem() instanceof ItemBase) {
 
             if(event.isCancelable()){event.setCanceled(true);}
             //draw a bounding box for possible block placement
-            FakeBBRender.bb(world, player, block_x, block_y, block_z, target.sideHit, partialTicks, context);
+            FakeBBRender.bb(world, event.player, block_x, block_y, block_z, event.target.sideHit, event.partialTicks, event.context);
 
         }
     }
 
+
+    @SubscribeEvent
+    public void onLeftClick(PlayerInteractEvent event){
+
+        ItemStack stack=event.entityPlayer.getHeldItem();
+        if (stack!=null){
+        Item item =stack.getItem();
+        //if (event.action== PlayerInteractEvent.Action.LEFT_CLICK_BLOCK)
+        if (event.action == PlayerInteractEvent.Action.LEFT_CLICK_BLOCK &&
+                item instanceof ItemBase) {
+            try {
+                FakeBBRender.setSideDrawAxis();
+                ItemBase.setSideDrawAxis();
+                ItemBase.onItemLeftClick(stack, event.entityPlayer, event.entityPlayer.getEntityWorld(), event.x, event.y, event.z, event.face);
+            }catch(Exception e){e.printStackTrace();}
+            }
+        }
+}
 }

@@ -23,11 +23,13 @@ public class ItemBase extends Item {
 
     public static String BlockName="SavedWorldBlock";
     public static String BlockMeta="SavedWorldMeta";
+    private static boolean sideAxis;
 
     public ItemBase() {
         super();
         this.setCreativeTab(CreativeTab.testTab);
         this.setMaxStackSize(1);
+        sideAxis=false;
     }
 
     @Override
@@ -68,8 +70,7 @@ public class ItemBase extends Item {
         return tempMap;}
 
 
-    public boolean onItemLeftClick(ItemStack itemstack, EntityPlayer player, World world, int x, int y, int z, int face, float hit_x, float hit_y, float hit_z) {
-
+    public static boolean onItemLeftClick(ItemStack itemstack, EntityPlayer player, World world, int x, int y, int z, int face) {
         return true;
     }
 
@@ -87,8 +88,8 @@ public class ItemBase extends Item {
             }
         }
     }
-    public boolean checkCollisions(World world, Block block, int x, int y, int z, int[] cords){
-        return (world.checkNoEntityCollision(block.getCollisionBoundingBoxFromPool(world, x, y, z)) && world.getBlock(cords[0],cords[1],cords[2]).getMaterial()== Material.air);
+    public boolean checkCollisions(World world, Block block, int x, int y, int z, int cord_x, int cord_y, int cord_z){
+        return (world.checkNoEntityCollision(block.getCollisionBoundingBoxFromPool(world, x, y, z)) && world.getBlock(cord_x,cord_y,cord_z).getMaterial()== Material.air);
     }
 
     public boolean checkInventory(EntityPlayer player, Block block) {
@@ -98,4 +99,10 @@ public class ItemBase extends Item {
     }
     public String getChosenBlockNameString(){return BlockName;}
     public String getChosenBlockMetaString(){return BlockMeta;}
+
+    public static void setSideDrawAxis(){
+      sideAxis=!sideAxis;
+    };
+
+    public boolean getSideDrawAxis(){return sideAxis;};
 }
