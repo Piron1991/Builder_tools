@@ -3,36 +3,22 @@ package com.piron1991.builder_tools.client.items;
 import com.piron1991.builder_tools.handler.ConfigHandler;
 import com.piron1991.builder_tools.utilities.BlockPlacingHelper;
 import com.piron1991.builder_tools.utilities.LogHelper;
-import com.piron1991.builder_tools.utilities.NBTHelper;
-import cpw.mods.fml.common.eventhandler.Event;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.play.client.C08PacketPlayerBlockPlacement;
-import net.minecraft.network.play.server.S2FPacketSetSlot;
 import net.minecraft.world.World;
-import sun.rmi.runtime.Log;
 
 import java.util.HashMap;
 
 public class StoneHand extends ItemBase {
 
     public final Minecraft mc;
-    public static NetHandlerPlayClient netClientHandler;
 
     public StoneHand() {
         super();
         this.setUnlocalizedName("StoneHand");
         this.mc = Minecraft.getMinecraft();
-        netClientHandler=mc.getNetHandler();
     }
 
 
@@ -49,16 +35,17 @@ public class StoneHand extends ItemBase {
                 //get saved block name and meta
                 HashMap map = getClickedBlock(itemstack, world, x, y, z);
 
-                Block chosenBlock = Block.getBlockFromName((String) map.get(getChosenBlockNameString()));
+                Block chosenBlock = Block.getBlockFromName((String) map.get(BlockName));
                 int meta;
-                if (map.get(getChosenBlockMetaString())==null){
+                if (map.get(BlockMeta)==null){
                     meta=0;
                 }else{
-                    meta = (Integer) map.get(getChosenBlockMetaString());
+                    meta = (Integer) map.get(BlockMeta);
                 }
                 if (chosenBlock != null) {
                     //array for easy block placing checks and use
                     int[] tempCord={x,y,z};
+                    float[] tempHit={hit_x,hit_y,hit_z};
                     tempCord= BlockPlacingHelper.sideChecker(face, tempCord);
 
                     //get block that player clicked
@@ -72,7 +59,7 @@ public class StoneHand extends ItemBase {
                     int min_j= BlockPlacingHelper.getMinJ(getPlacingSize());
                     int max_j= BlockPlacingHelper.getMaxJ(getPlacingSize());
 
-                    boolean yCheck=getSideDrawAxis();
+                    boolean yCheck=BlockPlacingHelper.getSideAxis();
 
                     switch (face) {
                         case 0: {
@@ -82,7 +69,8 @@ public class StoneHand extends ItemBase {
                                         LogHelper.info(tempCord[0]+"i: "+i+"/max_i: "+max_i);
                                         if (checkCollisions(world, clickedBlock, x, y, z, tempCord[0]-i,tempCord[1],tempCord[2]) && checkInventory(player,chosenBlock)){
                                             consumeItem(player,chosenBlock);
-                                            world.setBlock(tempCord[0]-i,tempCord[1],tempCord[2], chosenBlock, meta, 3);
+                                            placeBlockOnWorld(world, chosenBlock,tempCord,tempHit,face,meta, i,0,0,xzCheck);
+                                            //world.setBlock(tempCord[0]-i,tempCord[1],tempCord[2], chosenBlock, meta, 3);
 
                                         }
                                     }
@@ -94,7 +82,8 @@ public class StoneHand extends ItemBase {
                                     for (int i = min_i; i <= max_i; i++) {
                                         if (checkCollisions(world, clickedBlock, x, y, z, tempCord[0], tempCord[1], tempCord[2]-i) && checkInventory(player,chosenBlock)) {
                                             consumeItem(player,chosenBlock);
-                                            world.setBlock(tempCord[0], tempCord[1], tempCord[2]-i, chosenBlock, meta, 3);
+                                            placeBlockOnWorld(world, chosenBlock,tempCord,tempHit,face,meta, 0,0,i,xzCheck);
+                                            //world.setBlock(tempCord[0], tempCord[1], tempCord[2]-i, chosenBlock, meta, 3);
                                         }
                                     }
                                     tempCord[1] = tempCord[1] - 1;
@@ -108,7 +97,8 @@ public class StoneHand extends ItemBase {
                                     for (int i = min_i; i <= max_i; i++) {
                                         if (checkCollisions(world, clickedBlock, x, y, z, tempCord[0]-i, tempCord[1], tempCord[2]) && checkInventory(player,chosenBlock)) {
                                             consumeItem(player,chosenBlock);
-                                            world.setBlock(tempCord[0]-i, tempCord[1], tempCord[2], chosenBlock, meta, 3);
+                                            placeBlockOnWorld(world, chosenBlock,tempCord,tempHit,face,meta, i,0,0,xzCheck);
+                                            //world.setBlock(tempCord[0]-i, tempCord[1], tempCord[2], chosenBlock, meta, 3);
                                         }
                                     }
                                     tempCord[1] = tempCord[1] + 1;
@@ -119,7 +109,8 @@ public class StoneHand extends ItemBase {
                                     for (int i = min_i; i <= max_i; i++) {
                                         if (checkCollisions(world, clickedBlock, x, y, z, tempCord[0], tempCord[1], tempCord[2]-i) && checkInventory(player,chosenBlock)) {
                                             consumeItem(player,chosenBlock);
-                                            world.setBlock(tempCord[0], tempCord[1], tempCord[2]-i, chosenBlock, meta, 3);
+                                            placeBlockOnWorld(world, chosenBlock,tempCord,tempHit,face,meta, 0,0,i,xzCheck);
+                                            //world.setBlock(tempCord[0], tempCord[1], tempCord[2]-i, chosenBlock, meta, 3);
                                         }
                                     }
                                     tempCord[1] = tempCord[1] + 1;
@@ -133,12 +124,15 @@ public class StoneHand extends ItemBase {
                                 for (int i = min_i; i <= max_i; i++) {
                                     if (yCheck){
                                         if (checkCollisions(world, clickedBlock, x, y, z, tempCord[0]-i, tempCord[1], tempCord[2]) && checkInventory(player,chosenBlock)) {
-                                            world.setBlock(tempCord[0]-i, tempCord[1], tempCord[2], chosenBlock, meta, 3);}
-                                        consumeItem(player,chosenBlock);
+                                            consumeItem(player,chosenBlock);
+                                            placeBlockOnWorld(world, chosenBlock,tempCord,tempHit,face,meta, i,0,0,xzCheck);
+                                            //world.setBlock(tempCord[0]-i, tempCord[1], tempCord[2], chosenBlock, meta, 3);
+                                             }
                                     }else{
                                         if (checkCollisions(world, clickedBlock, x, y, z, tempCord[0], tempCord[1]-i, tempCord[2]) && checkInventory(player,chosenBlock)) {
-                                            world.setBlock(tempCord[0], tempCord[1]-i, tempCord[2], chosenBlock, meta, 3);
                                             consumeItem(player,chosenBlock);
+                                            placeBlockOnWorld(world, chosenBlock,tempCord,tempHit,face,meta, 0,i,0,xzCheck);
+                                            //world.setBlock(tempCord[0], tempCord[1]-i, tempCord[2], chosenBlock, meta, 3);
                                         }
                                     }
                                 }
@@ -155,11 +149,15 @@ public class StoneHand extends ItemBase {
                                     if (yCheck){
                                         if (checkCollisions(world, clickedBlock, x, y, z, tempCord[0]-i, tempCord[1], tempCord[2]) && checkInventory(player,chosenBlock)) {
                                             consumeItem(player,chosenBlock);
-                                            world.setBlock(tempCord[0]-i, tempCord[1], tempCord[2], chosenBlock, meta, 3);}
+                                            placeBlockOnWorld(world, chosenBlock,tempCord,tempHit,face,meta, i,0,0,xzCheck);
+                                            //world.setBlock(tempCord[0]-i, tempCord[1], tempCord[2], chosenBlock, meta, 3);
+                                             }
                                     }else{
                                         if (checkCollisions(world, clickedBlock, x, y, z, tempCord[0], tempCord[1]-i, tempCord[2]) && checkInventory(player,chosenBlock)) {
                                             consumeItem(player,chosenBlock);
-                                            world.setBlock(tempCord[0], tempCord[1]-i, tempCord[2], chosenBlock, meta, 3);}
+                                            placeBlockOnWorld(world, chosenBlock,tempCord,tempHit,face,meta, 0,i,0,xzCheck);
+                                            //world.setBlock(tempCord[0], tempCord[1]-i, tempCord[2], chosenBlock, meta, 3);
+                                             }
                                     }
 
                                 }
@@ -176,11 +174,15 @@ public class StoneHand extends ItemBase {
                                     if (yCheck){
                                         if (checkCollisions(world, clickedBlock, x, y, z, tempCord[0], tempCord[1], tempCord[2]-i) && checkInventory(player,chosenBlock)){
                                             consumeItem(player,chosenBlock);
-                                            world.setBlock(tempCord[0], tempCord[1], tempCord[2]-i, chosenBlock, meta, 3);}
+                                            placeBlockOnWorld(world, chosenBlock,tempCord,tempHit,face,meta, 0,0,i,xzCheck);
+                                            //world.setBlock(tempCord[0], tempCord[1], tempCord[2]-i, chosenBlock, meta, 3);
+                                        }
                                     }else{
                                         if (checkCollisions(world, clickedBlock, x, y, z, tempCord[0], tempCord[1]-i, tempCord[2]) && checkInventory(player,chosenBlock)){
                                             consumeItem(player,chosenBlock);
-                                            world.setBlock(tempCord[0], tempCord[1]-i, tempCord[2], chosenBlock, meta, 3);}
+                                            placeBlockOnWorld(world, chosenBlock,tempCord,tempHit,face,meta, 0,i,0,xzCheck);
+                                            //world.setBlock(tempCord[0], tempCord[1]-i, tempCord[2], chosenBlock, meta, 3);
+                                        }
                                     }
                                 }
 
@@ -196,11 +198,14 @@ public class StoneHand extends ItemBase {
                                     if (yCheck){
                                         if (checkCollisions(world, clickedBlock, x, y, z, tempCord[0], tempCord[1], tempCord[2]-i) && checkInventory(player,chosenBlock)){
                                             consumeItem(player, chosenBlock);
-                                            world.setBlock(tempCord[0], tempCord[1], tempCord[2]-i, chosenBlock, meta, 3);}
+                                            placeBlockOnWorld(world, chosenBlock,tempCord,tempHit,face,meta, 0,0,i,xzCheck);
+                                            //world.setBlock(tempCord[0], tempCord[1], tempCord[2]-i, chosenBlock, meta, 3);
+                                        }
                                     }else{
                                         if (checkCollisions(world, clickedBlock, x, y, z,tempCord[0], tempCord[1]-i, tempCord[2]) && checkInventory(player,chosenBlock)){
                                             consumeItem(player, chosenBlock);
-                                            world.setBlock(tempCord[0], tempCord[1]-i, tempCord[2], chosenBlock, meta, 3);
+                                            placeBlockOnWorld(world, chosenBlock,tempCord,tempHit,face,meta, 0,i,0,xzCheck);
+                                            //world.setBlock(tempCord[0], tempCord[1]-i, tempCord[2], chosenBlock, meta, 3);
                                         }
                                     }
                                 }

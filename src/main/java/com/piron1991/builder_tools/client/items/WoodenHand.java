@@ -5,7 +5,6 @@ import com.piron1991.builder_tools.handler.ConfigHandler;
 import com.piron1991.builder_tools.utilities.BlockPlacingHelper;
 import com.piron1991.builder_tools.utilities.LogHelper;
 import net.minecraft.block.Block;
-
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
@@ -32,22 +31,22 @@ public class WoodenHand extends ItemBase {
             if(!player.isSneaking()) {
                 //save to nbt clicked block name and its meta
                 setCLickedBlock(itemstack, world, x, y, z);
-
             } else if (player.isSneaking()) {
                 //get saved block name and meta
                 HashMap map = getClickedBlock(itemstack, world, x, y, z);
 
 
-                Block chosenBlock = Block.getBlockFromName((String) map.get(getChosenBlockNameString()));
+                Block chosenBlock = Block.getBlockFromName((String) map.get(BlockName));
                 int meta;
-                if (map.get(getChosenBlockMetaString())==null){
+                if (map.get(BlockMeta)==null){
                     meta=0;
                 }else{
-                    meta = (Integer) map.get(getChosenBlockMetaString());
+                    meta = (Integer) map.get(BlockMeta);
                 }
                 if (chosenBlock != null) {
                     //array for easy block placing checks and use
                     int[] tempCord={x,y,z};
+                    float[] tempHit={hit_x,hit_y,hit_z};
                     tempCord= BlockPlacingHelper.sideChecker(face, tempCord);
 
                     //get block that player clicked
@@ -61,8 +60,7 @@ public class WoodenHand extends ItemBase {
                     int min_j=1;
                     int max_j=1;
 
-                    boolean yCheck=getSideDrawAxis();
-                    LogHelper.info(yCheck);
+                    boolean yCheck=BlockPlacingHelper.getSideAxis();
                     switch (face) {
                         case 0: {
                             if (xzCheck == 0 || xzCheck == 2) {
@@ -71,7 +69,8 @@ public class WoodenHand extends ItemBase {
 
                                         if (checkCollisions(world, clickedBlock, x, y, z, tempCord[0]-i,tempCord[1],tempCord[2]) && checkInventory(player,chosenBlock)){
                                             consumeItem(player,chosenBlock);
-                                            world.setBlock(tempCord[0]-i,tempCord[1],tempCord[2], chosenBlock, meta, 3);
+                                            placeBlockOnWorld(world, chosenBlock,tempCord,tempHit,face,meta, i,0,0,xzCheck);
+                                            //world.setBlock(tempCord[0]-i,tempCord[1],tempCord[2], chosenBlock, meta, 3);
 
                                         }
                                     }
@@ -83,7 +82,8 @@ public class WoodenHand extends ItemBase {
                                     for (int i = min_i; i <= max_i; i++) {
                                         if (checkCollisions(world, clickedBlock, x, y, z, tempCord[0], tempCord[1], tempCord[2]-i) && checkInventory(player,chosenBlock)) {
                                             consumeItem(player,chosenBlock);
-                                            world.setBlock(tempCord[0], tempCord[1], tempCord[2]-i, chosenBlock, meta, 3);
+                                            placeBlockOnWorld(world, chosenBlock,tempCord,tempHit,face,meta, 0,0,i,xzCheck);
+                                            //world.setBlock(tempCord[0], tempCord[1], tempCord[2]-i, chosenBlock, meta, 3);
                                         }
                                     }
                                     tempCord[1] = tempCord[1] - 1;
@@ -97,7 +97,8 @@ public class WoodenHand extends ItemBase {
                                     for (int i = min_i; i <= max_i; i++) {
                                         if (checkCollisions(world, clickedBlock, x, y, z, tempCord[0]-i, tempCord[1], tempCord[2]) && checkInventory(player,chosenBlock)) {
                                             consumeItem(player,chosenBlock);
-                                            world.setBlock(tempCord[0]-i, tempCord[1], tempCord[2], chosenBlock, meta, 3);
+                                            placeBlockOnWorld(world, chosenBlock,tempCord,tempHit,face,meta, i,0,0,xzCheck);
+                                            //world.setBlock(tempCord[0]-i, tempCord[1], tempCord[2], chosenBlock, meta, 3);
                                         }
                                     }
                                     tempCord[1] = tempCord[1] + 1;
@@ -108,7 +109,8 @@ public class WoodenHand extends ItemBase {
                                     for (int i = min_i; i <= max_i; i++) {
                                         if (checkCollisions(world, clickedBlock, x, y, z, tempCord[0], tempCord[1], tempCord[2]-i) && checkInventory(player,chosenBlock)) {
                                             consumeItem(player,chosenBlock);
-                                            world.setBlock(tempCord[0], tempCord[1], tempCord[2]-i, chosenBlock, meta, 3);
+                                            //world.setBlock(tempCord[0], tempCord[1], tempCord[2]-i, chosenBlock, meta, 3);
+                                            placeBlockOnWorld(world, chosenBlock,tempCord,tempHit,face,meta, 0,0,i,xzCheck);
                                         }
                                     }
                                     tempCord[1] = tempCord[1] + 1;
@@ -122,12 +124,15 @@ public class WoodenHand extends ItemBase {
                                 for (int i = min_i; i <= max_i; i++) {
                                     if (yCheck){
                                         if (checkCollisions(world, clickedBlock, x, y, z, tempCord[0]-i, tempCord[1], tempCord[2]) && checkInventory(player,chosenBlock)) {
-                                            world.setBlock(tempCord[0]-i, tempCord[1], tempCord[2], chosenBlock, meta, 3);}
-                                        consumeItem(player,chosenBlock);
+                                            consumeItem(player,chosenBlock);
+                                            placeBlockOnWorld(world, chosenBlock,tempCord,tempHit,face,meta, i,0,0,xzCheck);
+                                            //world.setBlock(tempCord[0]-i, tempCord[1], tempCord[2], chosenBlock, meta, 3);
+                                            }
                                     }else{
                                         if (checkCollisions(world, clickedBlock, x, y, z, tempCord[0], tempCord[1]-i, tempCord[2]) && checkInventory(player,chosenBlock)) {
-                                            world.setBlock(tempCord[0], tempCord[1]-i, tempCord[2], chosenBlock, meta, 3);
                                             consumeItem(player,chosenBlock);
+                                            placeBlockOnWorld(world, chosenBlock,tempCord,tempHit,face,meta, 0,i,0,xzCheck);
+                                            //world.setBlock(tempCord[0], tempCord[1]-i, tempCord[2], chosenBlock, meta, 3);
                                         }
                                     }
                                 }
@@ -144,11 +149,15 @@ public class WoodenHand extends ItemBase {
                                     if (yCheck){
                                         if (checkCollisions(world, clickedBlock, x, y, z, tempCord[0]-i, tempCord[1], tempCord[2]) && checkInventory(player,chosenBlock)) {
                                             consumeItem(player,chosenBlock);
-                                            world.setBlock(tempCord[0]-i, tempCord[1], tempCord[2], chosenBlock, meta, 3);}
+                                            placeBlockOnWorld(world, chosenBlock,tempCord,tempHit,face,meta, i,0,0,xzCheck);
+                                           // world.setBlock(tempCord[0]-i, tempCord[1], tempCord[2], chosenBlock, meta, 3);
+                                            }
                                     }else{
                                         if (checkCollisions(world, clickedBlock, x, y, z, tempCord[0], tempCord[1]-i, tempCord[2]) && checkInventory(player,chosenBlock)) {
                                             consumeItem(player,chosenBlock);
-                                            world.setBlock(tempCord[0], tempCord[1]-i, tempCord[2], chosenBlock, meta, 3);}
+                                            placeBlockOnWorld(world, chosenBlock,tempCord,tempHit,face,meta, 0,i,0,xzCheck);
+                                            //world.setBlock(tempCord[0], tempCord[1]-i, tempCord[2], chosenBlock, meta, 3);
+                                             }
                                     }
 
                                 }
@@ -165,11 +174,15 @@ public class WoodenHand extends ItemBase {
                                     if (yCheck){
                                         if (checkCollisions(world, clickedBlock, x, y, z, tempCord[0], tempCord[1], tempCord[2]-i) && checkInventory(player,chosenBlock)){
                                             consumeItem(player,chosenBlock);
-                                            world.setBlock(tempCord[0], tempCord[1], tempCord[2]-i, chosenBlock, meta, 3);}
+                                            placeBlockOnWorld(world, chosenBlock,tempCord,tempHit,face,meta, 0,0,i,xzCheck);
+                                           // world.setBlock(tempCord[0], tempCord[1], tempCord[2]-i, chosenBlock, meta, 3);
+                                            }
                                     }else{
                                         if (checkCollisions(world, clickedBlock, x, y, z, tempCord[0], tempCord[1]-i, tempCord[2]) && checkInventory(player,chosenBlock)){
                                             consumeItem(player,chosenBlock);
-                                            world.setBlock(tempCord[0], tempCord[1]-i, tempCord[2], chosenBlock, meta, 3);}
+                                            placeBlockOnWorld(world, chosenBlock,tempCord,tempHit,face,meta, 0,i,0,xzCheck);
+                                           // world.setBlock(tempCord[0], tempCord[1]-i, tempCord[2], chosenBlock, meta, 3);
+                                        }
                                     }
                                 }
 
@@ -185,11 +198,14 @@ public class WoodenHand extends ItemBase {
                                     if (yCheck){
                                         if (checkCollisions(world, clickedBlock, x, y, z, tempCord[0], tempCord[1], tempCord[2]-i) && checkInventory(player,chosenBlock)){
                                             consumeItem(player, chosenBlock);
-                                            world.setBlock(tempCord[0], tempCord[1], tempCord[2]-i, chosenBlock, meta, 3);}
+                                            placeBlockOnWorld(world, chosenBlock,tempCord,tempHit,face,meta, 0,0,i,xzCheck);
+                                            //world.setBlock(tempCord[0], tempCord[1], tempCord[2]-i, chosenBlock, meta, 3);
+                                        }
                                     }else{
                                         if (checkCollisions(world, clickedBlock, x, y, z,tempCord[0], tempCord[1]-i, tempCord[2]) && checkInventory(player,chosenBlock)){
                                             consumeItem(player, chosenBlock);
-                                            world.setBlock(tempCord[0], tempCord[1]-i, tempCord[2], chosenBlock, meta, 3);
+                                            placeBlockOnWorld(world, chosenBlock,tempCord,tempHit,face,meta, 0,i,0,xzCheck);
+                                            //world.setBlock(tempCord[0], tempCord[1]-i, tempCord[2], chosenBlock, meta, 3);
                                         }
                                     }
                                 }
@@ -210,7 +226,6 @@ public class WoodenHand extends ItemBase {
         // True if something happen and false if it don't
         return true;
     }
-
 
     public int getPlacingSize(){return ConfigHandler.woodenToolSize;}
 }

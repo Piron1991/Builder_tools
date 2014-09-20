@@ -3,6 +3,8 @@ package com.piron1991.builder_tools.utilities;
 
 public class BlockPlacingHelper {
 
+    protected static boolean sideAxis=false;
+
     public static short drawAxisChecker(float yaw) {
 
         //yaw to block center: 0(325:45) / face: 2, should render from +x,-x
@@ -74,8 +76,8 @@ public class BlockPlacingHelper {
         return (int)Math.floor(size/2);
     }
 
-
-
+    public static boolean getSideAxis(){return sideAxis;}
+    public static void setSideAxis(){sideAxis=!sideAxis;}
 
 }
 

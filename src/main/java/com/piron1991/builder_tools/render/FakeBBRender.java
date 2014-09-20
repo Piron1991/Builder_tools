@@ -30,8 +30,6 @@ public class FakeBBRender {
     private static int max_i=0;
     private static int min_j=0;
     private static int max_j=0;
-    private static boolean sideAxis=false;
-
 
     //draw possible block placement
     public static void bb(World world,EntityPlayer player, int block_x, int block_y, int block_z,int side,float tick, RenderGlobal context) {
@@ -61,6 +59,7 @@ public class FakeBBRender {
                 //check which side player is facing to render on x or z axis when pointing on top or bottom of block
                 int xzCheck = BlockPlacingHelper.drawAxisChecker(Math.abs(player.rotationYaw) % 360);
                 //actual render code
+                //TODO: stop grabbing BB from pointed block, grab it from selected one or render just cube
                 switch (side) {
                     case 0: {
                         if (xzCheck == 0 || xzCheck == 2) {
@@ -102,7 +101,7 @@ public class FakeBBRender {
                             for (int j = min_j; j <= max_j; j++) {
                                 offset_z++;
                                 for (int i = min_i; i <= max_i; i++) {
-                                    if (sideAxis) {
+                                    if (BlockPlacingHelper.getSideAxis()) {
                                     context.drawOutlinedBoundingBox(block.getSelectedBoundingBoxFromPool(world, block_x, block_y, block_z).expand((double) expansion_border, (double) expansion_border, (double) expansion_border).getOffsetBoundingBox(-(offset_x - i), -offset_y, -offset_z), -1);
                                 }else{
                                     context.drawOutlinedBoundingBox(block.getSelectedBoundingBoxFromPool(world, block_x, block_y, block_z).expand((double) expansion_border, (double) expansion_border, (double) expansion_border).getOffsetBoundingBox(-offset_x, -(offset_y-i), -offset_z), -1);
@@ -115,7 +114,7 @@ public class FakeBBRender {
                             for (int j = min_j; j <= max_j; j++) {
                                 offset_z--;
                                 for (int i = min_i; i <= max_i; i++) {
-                                    if (sideAxis) {
+                                    if (BlockPlacingHelper.getSideAxis()) {
                                     context.drawOutlinedBoundingBox(block.getSelectedBoundingBoxFromPool(world, block_x, block_y, block_z).expand((double) expansion_border, (double) expansion_border, (double) expansion_border).getOffsetBoundingBox(-(offset_x - i), -offset_y, -offset_z), -1);
                                 }else{
                                     context.drawOutlinedBoundingBox(block.getSelectedBoundingBoxFromPool(world, block_x, block_y, block_z).expand((double) expansion_border, (double) expansion_border, (double) expansion_border).getOffsetBoundingBox(-offset_x, -(offset_y-i), -offset_z), -1);
@@ -129,7 +128,7 @@ public class FakeBBRender {
                             for (int j = min_j; j <= max_j; j++) {
                                 offset_x++;
                                 for (int i = min_i; i <= max_i; i++) {
-                                    if (sideAxis) {
+                                    if (BlockPlacingHelper.getSideAxis()) {
                                     context.drawOutlinedBoundingBox(block.getSelectedBoundingBoxFromPool(world, block_x, block_y, block_z).expand((double) expansion_border, (double) expansion_border, (double) expansion_border).getOffsetBoundingBox(-offset_x, -offset_y, -(offset_z - i)), -1);
                                 }else{
                                     context.drawOutlinedBoundingBox(block.getSelectedBoundingBoxFromPool(world, block_x, block_y, block_z).expand((double) expansion_border, (double) expansion_border, (double) expansion_border).getOffsetBoundingBox(-offset_x, -(offset_y-i), -offset_z), -1);
@@ -143,7 +142,7 @@ public class FakeBBRender {
                             for (int j = min_j; j <= max_j; j++) {
                                 offset_x--;
                                 for (int i = min_i; i <= max_i; i++) {
-                                    if (sideAxis) {
+                                    if (BlockPlacingHelper.getSideAxis()) {
                                     context.drawOutlinedBoundingBox(block.getSelectedBoundingBoxFromPool(world, block_x, block_y, block_z).expand((double) expansion_border, (double) expansion_border, (double) expansion_border).getOffsetBoundingBox(-offset_x, -offset_y, -(offset_z - i)), -1);
                                 }else{
                                     context.drawOutlinedBoundingBox(block.getSelectedBoundingBoxFromPool(world, block_x, block_y, block_z).expand((double) expansion_border, (double) expansion_border, (double) expansion_border).getOffsetBoundingBox(-offset_x, -(offset_y-i), -offset_z), -1);
@@ -176,10 +175,6 @@ public class FakeBBRender {
     private static void setMaxJ(int size){
         max_j= BlockPlacingHelper.getMaxJ(size);
     }
-
-    public static void setSideDrawAxis(){
-        sideAxis=!sideAxis;
-    };
 
     //checks what item player is holding and then set ranges for rendering based on that item type
     private static void setSizing(EntityPlayer player){

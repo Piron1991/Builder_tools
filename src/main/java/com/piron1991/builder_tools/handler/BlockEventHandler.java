@@ -2,21 +2,15 @@ package com.piron1991.builder_tools.handler;
 
 
 import com.piron1991.builder_tools.client.items.*;
-import com.piron1991.builder_tools.utilities.LogHelper;
+import com.piron1991.builder_tools.utilities.BlockPlacingHelper;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import net.minecraft.client.renderer.RenderGlobal;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.DrawBlockHighlightEvent;
 import com.piron1991.builder_tools.render.FakeBBRender;
-import net.minecraftforge.client.event.MouseEvent;
-import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import sun.rmi.runtime.Log;
-
 
 public class BlockEventHandler {
 
@@ -47,14 +41,10 @@ public class BlockEventHandler {
         ItemStack stack=event.entityPlayer.getHeldItem();
         if (stack!=null){
         Item item =stack.getItem();
-        //if (event.action== PlayerInteractEvent.Action.LEFT_CLICK_BLOCK)
         if (event.action == PlayerInteractEvent.Action.LEFT_CLICK_BLOCK &&
                 item instanceof ItemBase) {
-            try {
-                FakeBBRender.setSideDrawAxis();
-                ItemBase.setSideDrawAxis();
+                BlockPlacingHelper.setSideAxis();
                 ItemBase.onItemLeftClick(stack, event.entityPlayer, event.entityPlayer.getEntityWorld(), event.x, event.y, event.z, event.face);
-            }catch(Exception e){e.printStackTrace();}
             }
         }
 }
