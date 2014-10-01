@@ -3,7 +3,7 @@ package com.piron1991.builder_tools.utilities;
 
 public class BlockPlacingHelper {
 
-    protected static boolean sideAxis=false;
+    protected static boolean sideAxis=true;
 
     public static short drawAxisChecker(float yaw) {
 

@@ -3,6 +3,8 @@ package com.piron1991.builder_tools.client.items;
 import com.piron1991.builder_tools.creativeTab.CreativeTab;
 
 import com.piron1991.builder_tools.reference.Reference;
+import com.piron1991.builder_tools.utilities.BlockPlacingHelper;
+import com.piron1991.builder_tools.utilities.BlockRotationHelper;
 import com.piron1991.builder_tools.utilities.LogHelper;
 import com.piron1991.builder_tools.utilities.NBTHelper;
 import cpw.mods.fml.common.registry.GameRegistry;
@@ -16,6 +18,8 @@ import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.ForgeDirection;
+import net.minecraftforge.common.util.RotationHelper;
 
 import java.util.HashMap;
 
@@ -64,7 +68,7 @@ public class ItemBase extends Item {
         tempMap.put(BlockMeta,meta);
         return tempMap;
     }
-
+    //TODO get rid of static(probably need to check registering new event for that)
     public static boolean onItemLeftClick(ItemStack itemstack, EntityPlayer player, World world, int x, int y, int z, int face) {
         return true;
     }
@@ -96,6 +100,23 @@ public class ItemBase extends Item {
 	at net.minecraft.network.play.client.C08PacketPlayerBlockPlacement.processPacket(C08PacketPlayerBlockPlacement.java:74)
 	at net.minecraft.network.play.client.C08PacketPlayerBlockPlacement.processPacket(C08PacketPlayerBlockPlacement.java:122)
 	at net.minecraft.network.NetworkManager.processReceivedPackets(NetworkManager.java:247)
+
+
+
+	Stacktrace:
+	at net.minecraft.world.World.getEntitiesWithinAABBExcludingEntity(World.java:3452)
+	at net.minecraft.world.World.getEntitiesWithinAABBExcludingEntity(World.java:3446)
+	at net.minecraft.world.World.checkNoEntityCollision(World.java:2336)
+	at net.minecraft.world.World.checkNoEntityCollision(World.java:2328)
+	at com.piron1991.builder_tools.client.items.ItemBase.checkCollisions(ItemBase.java:102)
+	at com.piron1991.builder_tools.client.items.WoodenHand.onItemUse(WoodenHand.java:98)
+	at net.minecraft.item.ItemStack.tryPlaceItemIntoWorld(ItemStack.java:145)
+	at net.minecraft.server.management.ItemInWorldManager.activateBlockOrUseItem(ItemInWorldManager.java:422)
+	at net.minecraft.network.NetHandlerPlayServer.processPlayerBlockPlacement(NetHandlerPlayServer.java:591)
+	at net.minecraft.network.play.client.C08PacketPlayerBlockPlacement.processPacket(C08PacketPlayerBlockPlacement.java:74)
+	at net.minecraft.network.play.client.C08PacketPlayerBlockPlacement.processPacket(C08PacketPlayerBlockPlacement.java:122)
+	at net.minecraft.network.NetworkManager.processReceivedPackets(NetworkManager.java:247)
+
          */
         return (world.checkNoEntityCollision(block.getCollisionBoundingBoxFromPool(world, x, y, z)) && world.getBlock(cord_x,cord_y,cord_z).getMaterial()== Material.air);
     }
@@ -106,44 +127,12 @@ public class ItemBase extends Item {
     }
 
     public void placeBlockOnWorld(World world, Block block,int[] cords,float[] hits, int face, int meta, int offsetX,int offsetY, int offsetZ, int axis){
-        if (block instanceof BlockLadder) {
-                meta = block.onBlockPlaced(world, cords[0] - offsetX, cords[1] - offsetY, cords[2] - offsetZ, face, hits[0], hits[1], hits[2], meta);
-        }else if(block instanceof BlockSlab){
-            //TODO: decide if should change slab into doubleslab
-            meta=meta>=8 ? meta-8:meta;
-            if (face !=0&& face !=1) {
-                meta = ((double) hits[1] <= 0.5D) ? meta : meta | 8;
-            }
-        }else if(block instanceof BlockStairs){
-           switch(face){
-
-               case 0:{
-                   if (axis==0) meta=6;
-                   if (axis==1) meta=5;
-                   if (axis==2) meta=7;
-                   if (axis==3) meta=4;
-                   break;
-               }
-               case 1:{
-                   if (axis==0) meta=2;
-                   if (axis==1) meta=1;
-                   if (axis==2) meta=3;
-                   if (axis==3) meta=0;
-                   break;
-               }
-               case 2:{meta=((double)hits[1] <= 0.5D) ? 2 : 6; break;}
-               case 3:{meta=((double)hits[1] <= 0.5D) ? 3 : 7; break;}
-               case 4:{meta=((double)hits[1] <= 0.5D) ? 0 : 4; break;}
-               case 5:{meta=((double)hits[1] <= 0.5D) ? 1 : 5; break;}
-           }
-        }else if(block instanceof BlockLog){
-            if (face==0||face==1){meta=meta%4;}
-            if (face==2||face==3){meta=meta%4+8;}
-            if (face==4||face==5){meta=meta%4+4;}
-        }
+        //TODO: decide if should change slab into doubleslab
+        int newMeta= BlockRotationHelper.rotateMetaToFace(world,block,cords[0] - offsetX, cords[1] - offsetY, cords[2] - offsetZ,face,meta,hits,axis);
         if (block.canPlaceBlockAt(world, cords[0] - offsetX, cords[1] - offsetY, cords[2] - offsetZ)) {
-            world.setBlock(cords[0] - offsetX, cords[1] - offsetY, cords[2] - offsetZ, block, meta, 3);
+            world.setBlock(cords[0] - offsetX, cords[1] - offsetY, cords[2] - offsetZ, block, newMeta, 3);
         }
+        block.rotateBlock(world,cords[0] - offsetX, cords[1] - offsetY, cords[2] - offsetZ, ForgeDirection.getOrientation(face));
     }
 
 }

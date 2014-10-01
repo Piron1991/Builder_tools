@@ -44,7 +44,7 @@ public class BlockEventHandler {
         if (event.action == PlayerInteractEvent.Action.LEFT_CLICK_BLOCK &&
                 item instanceof ItemBase) {
                 BlockPlacingHelper.setSideAxis();
-                ItemBase.onItemLeftClick(stack, event.entityPlayer, event.entityPlayer.getEntityWorld(), event.x, event.y, event.z, event.face);
+            ItemBase.onItemLeftClick(stack, event.entityPlayer, event.entityPlayer.getEntityWorld(), event.x, event.y, event.z, event.face);
             }
         }
 }
