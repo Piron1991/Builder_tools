@@ -18,7 +18,7 @@ import net.minecraft.world.World;
 
 import org.lwjgl.opengl.GL11;
 
-@SideOnly(Side.CLIENT)
+
 public class FakeBBRender {
 
     private static float red= ConfigHandler.borderRed/255;
@@ -33,130 +33,131 @@ public class FakeBBRender {
 
     //draw possible block placement
     public static void bb(World world,EntityPlayer player, int block_x, int block_y, int block_z,int side,float tick, RenderGlobal context) {
+        if (world.isRemote) {
+            //set sizes to render, for item that is held by player
+            setSizing(player);
+            if (min_i != 0 && max_i != 0 && min_j != 0 && max_j != 0) {
+                //bounding box code for blending with existing block
+                GL11.glEnable(GL11.GL_BLEND);
+                OpenGlHelper.glBlendFunc(770, 771, 1, 0);
+                GL11.glColor4f(red, green, blue, alpha);
+                GL11.glLineWidth(width);
+                GL11.glDisable(GL11.GL_TEXTURE_2D);
+                GL11.glDepthMask(false);
+                float expansion_border = 0.0002F;
 
-        //set sizes to render, for item that is held by player
-        setSizing(player);
-        if (min_i != 0 && max_i != 0 && min_j != 0 && max_j != 0) {
-            //bounding box code for blending with existing block
-            GL11.glEnable(GL11.GL_BLEND);
-            OpenGlHelper.glBlendFunc(770, 771, 1, 0);
-            GL11.glColor4f(red, green, blue, alpha);
-            GL11.glLineWidth(width);
-            GL11.glDisable(GL11.GL_TEXTURE_2D);
-            GL11.glDepthMask(false);
-            float expansion_border = 0.0002F;
+                //get block that mouse is pointing
+                Block block = world.getBlock(block_x, block_y, block_z);
 
-            //get block that mouse is pointing check for
-            Block block = world.getBlock(block_x, block_y, block_z);
+                if (block.getMaterial() != Material.air) {
 
-            if (block.getMaterial() != Material.air) {
+                    //base for offsetting rendering box
+                    double offset_x = (player.lastTickPosX + (player.posX - player.lastTickPosX) * (double) tick) - expansion_border * 2;
+                    double offset_y = (player.lastTickPosY + (player.posY - player.lastTickPosY) * (double) tick) - expansion_border * 2;
+                    double offset_z = (player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * (double) tick) - expansion_border * 2;
 
-                //base for offsetting rendering box
-                double offset_x = (player.lastTickPosX + (player.posX - player.lastTickPosX) * (double) tick) - expansion_border * 2;
-                double offset_y = (player.lastTickPosY + (player.posY - player.lastTickPosY) * (double) tick) - expansion_border * 2;
-                double offset_z = (player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * (double) tick) - expansion_border * 2;
-
-                //check which side player is facing to render on x or z axis when pointing on top or bottom of block
-                int xzCheck = BlockPlacingHelper.drawAxisChecker(Math.abs(player.rotationYaw) % 360);
-                //actual render code
-                //TODO: stop grabbing BB from pointed block, grab it from selected one or render just cube
-                switch (side) {
-                    case 0: {
-                        if (xzCheck == 0 || xzCheck == 2) {
-                            for (int j = min_j; j <= max_j; j++) {
-                                offset_y++;
-                                for (int i = min_i; i <= max_i; i++) {
-                                    context.drawOutlinedBoundingBox(block.getSelectedBoundingBoxFromPool(world, block_x, block_y, block_z).expand((double) expansion_border, (double) expansion_border, (double) expansion_border).getOffsetBoundingBox(-(offset_x - i), -offset_y, -offset_z), -1);
+                    //check which side player is facing to render on x or z axis when pointing on top or bottom of block
+                    int xzCheck = BlockPlacingHelper.drawAxisChecker(Math.abs(player.rotationYaw) % 360);
+                    //actual render code
+                    //TODO: stop grabbing BB from pointed block, grab it from selected one or render just cube
+                    switch (side) {
+                        case 0: {
+                            if (xzCheck == 0 || xzCheck == 2) {
+                                for (int j = min_j; j <= max_j; j++) {
+                                    offset_y++;
+                                    for (int i = min_i; i <= max_i; i++) {
+                                        context.drawOutlinedBoundingBox(block.getSelectedBoundingBoxFromPool(world, block_x, block_y, block_z).expand((double) expansion_border, (double) expansion_border, (double) expansion_border).getOffsetBoundingBox(-(offset_x - i), -offset_y, -offset_z), -1);
+                                    }
+                                }
+                            } else if (xzCheck == 1 || xzCheck == 3) {
+                                for (int j = min_j; j <= max_j; j++) {
+                                    offset_y++;
+                                    for (int i = min_i; i <= max_i; i++) {
+                                        context.drawOutlinedBoundingBox(block.getSelectedBoundingBoxFromPool(world, block_x, block_y, block_z).expand((double) expansion_border, (double) expansion_border, (double) expansion_border).getOffsetBoundingBox(-offset_x, -offset_y, -(offset_z - i)), -1);
+                                    }
                                 }
                             }
-                        } else if (xzCheck == 1 || xzCheck == 3) {
-                            for (int j = min_j; j <= max_j; j++) {
-                                offset_y++;
-                                for (int i = min_i; i <= max_i; i++) {
-                                    context.drawOutlinedBoundingBox(block.getSelectedBoundingBoxFromPool(world, block_x, block_y, block_z).expand((double) expansion_border, (double) expansion_border, (double) expansion_border).getOffsetBoundingBox(-offset_x, -offset_y, -(offset_z - i)), -1);
-                                }
-                            }
+                            break;
                         }
-                        break;
-                    }
-                    case 1: {
-                        if (xzCheck == 0 || xzCheck == 2) {
-                            for (int j = min_j; j <= max_j; j++) {
-                                offset_y--;
-                                for (int i = min_i; i <= max_i; i++) {
-                                    context.drawOutlinedBoundingBox(block.getSelectedBoundingBoxFromPool(world, block_x, block_y, block_z).expand((double) expansion_border, (double) expansion_border, (double) expansion_border).getOffsetBoundingBox(-(offset_x - i), -offset_y, -offset_z), -1);
+                        case 1: {
+                            if (xzCheck == 0 || xzCheck == 2) {
+                                for (int j = min_j; j <= max_j; j++) {
+                                    offset_y--;
+                                    for (int i = min_i; i <= max_i; i++) {
+                                        context.drawOutlinedBoundingBox(block.getSelectedBoundingBoxFromPool(world, block_x, block_y, block_z).expand((double) expansion_border, (double) expansion_border, (double) expansion_border).getOffsetBoundingBox(-(offset_x - i), -offset_y, -offset_z), -1);
+                                    }
+                                }
+                            } else if (xzCheck == 1 || xzCheck == 3) {
+                                for (int j = min_j; j <= max_j; j++) {
+                                    offset_y--;
+                                    for (int i = min_i; i <= max_i; i++) {
+                                        context.drawOutlinedBoundingBox(block.getSelectedBoundingBoxFromPool(world, block_x, block_y, block_z).expand((double) expansion_border, (double) expansion_border, (double) expansion_border).getOffsetBoundingBox(-offset_x, -offset_y, -(offset_z - i)), -1);
+                                    }
                                 }
                             }
-                        } else if (xzCheck == 1 || xzCheck == 3) {
-                            for (int j = min_j; j <= max_j; j++) {
-                                offset_y--;
-                                for (int i = min_i; i <= max_i; i++) {
-                                    context.drawOutlinedBoundingBox(block.getSelectedBoundingBoxFromPool(world, block_x, block_y, block_z).expand((double) expansion_border, (double) expansion_border, (double) expansion_border).getOffsetBoundingBox(-offset_x, -offset_y, -(offset_z - i)), -1);
-                                }
-                            }
+                            break;
                         }
-                        break;
-                    }
-                    case 2: {
+                        case 2: {
                             for (int j = min_j; j <= max_j; j++) {
                                 offset_z++;
                                 for (int i = min_i; i <= max_i; i++) {
                                     if (BlockPlacingHelper.getSideAxis()) {
-                                    context.drawOutlinedBoundingBox(block.getSelectedBoundingBoxFromPool(world, block_x, block_y, block_z).expand((double) expansion_border, (double) expansion_border, (double) expansion_border).getOffsetBoundingBox(-(offset_x - i), -offset_y, -offset_z), -1);
-                                }else{
-                                    context.drawOutlinedBoundingBox(block.getSelectedBoundingBoxFromPool(world, block_x, block_y, block_z).expand((double) expansion_border, (double) expansion_border, (double) expansion_border).getOffsetBoundingBox(-offset_x, -(offset_y-i), -offset_z), -1);
+                                        context.drawOutlinedBoundingBox(block.getSelectedBoundingBoxFromPool(world, block_x, block_y, block_z).expand((double) expansion_border, (double) expansion_border, (double) expansion_border).getOffsetBoundingBox(-(offset_x - i), -offset_y, -offset_z), -1);
+                                    } else {
+                                        context.drawOutlinedBoundingBox(block.getSelectedBoundingBoxFromPool(world, block_x, block_y, block_z).expand((double) expansion_border, (double) expansion_border, (double) expansion_border).getOffsetBoundingBox(-offset_x, -(offset_y - i), -offset_z), -1);
                                     }
+                                }
                             }
-                        }
                             break;
-                    }
-                    case 3: {
+                        }
+                        case 3: {
                             for (int j = min_j; j <= max_j; j++) {
                                 offset_z--;
                                 for (int i = min_i; i <= max_i; i++) {
                                     if (BlockPlacingHelper.getSideAxis()) {
-                                    context.drawOutlinedBoundingBox(block.getSelectedBoundingBoxFromPool(world, block_x, block_y, block_z).expand((double) expansion_border, (double) expansion_border, (double) expansion_border).getOffsetBoundingBox(-(offset_x - i), -offset_y, -offset_z), -1);
-                                }else{
-                                    context.drawOutlinedBoundingBox(block.getSelectedBoundingBoxFromPool(world, block_x, block_y, block_z).expand((double) expansion_border, (double) expansion_border, (double) expansion_border).getOffsetBoundingBox(-offset_x, -(offset_y-i), -offset_z), -1);
+                                        context.drawOutlinedBoundingBox(block.getSelectedBoundingBoxFromPool(world, block_x, block_y, block_z).expand((double) expansion_border, (double) expansion_border, (double) expansion_border).getOffsetBoundingBox(-(offset_x - i), -offset_y, -offset_z), -1);
+                                    } else {
+                                        context.drawOutlinedBoundingBox(block.getSelectedBoundingBoxFromPool(world, block_x, block_y, block_z).expand((double) expansion_border, (double) expansion_border, (double) expansion_border).getOffsetBoundingBox(-offset_x, -(offset_y - i), -offset_z), -1);
                                     }
+                                }
                             }
-                        }
-                        break;
+                            break;
 
                         }
-                    case 4: {
+                        case 4: {
                             for (int j = min_j; j <= max_j; j++) {
                                 offset_x++;
                                 for (int i = min_i; i <= max_i; i++) {
                                     if (BlockPlacingHelper.getSideAxis()) {
-                                    context.drawOutlinedBoundingBox(block.getSelectedBoundingBoxFromPool(world, block_x, block_y, block_z).expand((double) expansion_border, (double) expansion_border, (double) expansion_border).getOffsetBoundingBox(-offset_x, -offset_y, -(offset_z - i)), -1);
-                                }else{
-                                    context.drawOutlinedBoundingBox(block.getSelectedBoundingBoxFromPool(world, block_x, block_y, block_z).expand((double) expansion_border, (double) expansion_border, (double) expansion_border).getOffsetBoundingBox(-offset_x, -(offset_y-i), -offset_z), -1);
+                                        context.drawOutlinedBoundingBox(block.getSelectedBoundingBoxFromPool(world, block_x, block_y, block_z).expand((double) expansion_border, (double) expansion_border, (double) expansion_border).getOffsetBoundingBox(-offset_x, -offset_y, -(offset_z - i)), -1);
+                                    } else {
+                                        context.drawOutlinedBoundingBox(block.getSelectedBoundingBoxFromPool(world, block_x, block_y, block_z).expand((double) expansion_border, (double) expansion_border, (double) expansion_border).getOffsetBoundingBox(-offset_x, -(offset_y - i), -offset_z), -1);
                                     }
+                                }
                             }
+                            break;
                         }
-                        break;
-                    }
 
-                    case 5: {
+                        case 5: {
                             for (int j = min_j; j <= max_j; j++) {
                                 offset_x--;
                                 for (int i = min_i; i <= max_i; i++) {
                                     if (BlockPlacingHelper.getSideAxis()) {
-                                    context.drawOutlinedBoundingBox(block.getSelectedBoundingBoxFromPool(world, block_x, block_y, block_z).expand((double) expansion_border, (double) expansion_border, (double) expansion_border).getOffsetBoundingBox(-offset_x, -offset_y, -(offset_z - i)), -1);
-                                }else{
-                                    context.drawOutlinedBoundingBox(block.getSelectedBoundingBoxFromPool(world, block_x, block_y, block_z).expand((double) expansion_border, (double) expansion_border, (double) expansion_border).getOffsetBoundingBox(-offset_x, -(offset_y-i), -offset_z), -1);
+                                        context.drawOutlinedBoundingBox(block.getSelectedBoundingBoxFromPool(world, block_x, block_y, block_z).expand((double) expansion_border, (double) expansion_border, (double) expansion_border).getOffsetBoundingBox(-offset_x, -offset_y, -(offset_z - i)), -1);
+                                    } else {
+                                        context.drawOutlinedBoundingBox(block.getSelectedBoundingBoxFromPool(world, block_x, block_y, block_z).expand((double) expansion_border, (double) expansion_border, (double) expansion_border).getOffsetBoundingBox(-offset_x, -(offset_y - i), -offset_z), -1);
                                     }
+                                }
                             }
-                        }
-                        break;
+                            break;
 
                         }
 
+                    }
+                    GL11.glDepthMask(true);
+                    GL11.glEnable(GL11.GL_TEXTURE_2D);
+                    GL11.glDisable(GL11.GL_BLEND);
                 }
-                GL11.glDepthMask(true);
-                GL11.glEnable(GL11.GL_TEXTURE_2D);
-                GL11.glDisable(GL11.GL_BLEND);
             }
         }
     }

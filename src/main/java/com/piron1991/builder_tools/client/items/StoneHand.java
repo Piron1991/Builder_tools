@@ -13,12 +13,10 @@ import java.util.HashMap;
 
 public class StoneHand extends ItemBase {
 
-    public final Minecraft mc;
 
     public StoneHand() {
         super();
         this.setUnlocalizedName("StoneHand");
-        this.mc = Minecraft.getMinecraft();
     }
 
 

@@ -16,11 +16,9 @@ import java.util.HashMap;
 
 public class WoodenHand extends ItemBase {
 
-    public final Minecraft mc;
     public WoodenHand() {
         super();
         this.setUnlocalizedName("WoodenHand");
-        this.mc = Minecraft.getMinecraft();
     }
 
 
